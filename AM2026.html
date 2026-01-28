@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+<meta charset="UTF-8">
+<title>Մեր Հարսանիքը</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Poppins&display=swap" rel="stylesheet">
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    scroll-behavior: smooth;
+    background-image:
+        linear-gradient(rgba(255,245,250,0.92), rgba(255,245,250,0.92)),
+        url("harsaniq");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at center,
+        rgba(255,255,255,0) 45%,
+        rgba(139,30,63,0.18) 100%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+nav {
+    position: sticky;
+    top: 0;
+    background: linear-gradient(135deg, #8b1e3f, #b03a5b);
+    padding: 12px;
+    text-align: center;
+    z-index: 10;
+}
+nav a {
+    color: white;
+    margin: 0 12px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+section {
+    position: relative;
+    z-index: 1;
+    padding: 40px 20px;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: 0.6s ease;
+}
+section.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.container {
+    max-width: 900px;
+    margin: auto;
+    background: rgba(255,255,255,0.96);
+    padding: 50px;
+    border-radius: 30px;
+    box-shadow: 0 40px 80px rgba(139,30,63,0.25);
+    backdrop-filter: blur(8px);
+}
+
+h1, h2 {
+    font-family: 'Playfair Display', serif;
+    text-align: center;
+    color: #7a1b3a;
+}
+
+.box {
+    background: linear-gradient(135deg, #fff9fc, #fde6ee);
+    padding: 30px;
+    border-radius: 20px;
+    font-size: 18px;
+}
+
+label { margin-top: 20px; display: block; font-weight: bold; }
+input, textarea {
+    width: 100%;
+    padding: 12px;
+    margin-top: 6px;
+    border-radius: 12px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+}
+
+button {
+    margin-top: 20px;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #8b1e3f, #b03a5b);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+}
+
+.guest-card {
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #fff5fa, #fde1ec);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+.guest-actions {
+    margin-top: 10px;
+    text-align: right;
+}
+.guest-actions button {
+    margin-left: 5px;
+    padding: 6px 12px;
+    font-size: 14px;
+}
+
+.hidden { display: none; }
+
+@media (max-width: 768px) {
+    body { background-attachment: scroll; }
+    .container { padding: 25px 20px; }
+}
+</style>
+</head>
+
+<body>
+
+<nav>
+    <a href="#planner">Մեր Հարսանիքը</a>
+    <a href="#day">Օրվա ծրագիր</a>
+    <a href="#register">Գրանցում</a>
+    <a href="#admin">Admin</a>
+</nav>
+
+<section id="planner">
+    <div class="container">
+        <h1>💍 Մեր Հարսանիքը 💍</h1>
+        <div class="box">Սիրո և երջանկության այս օրը՝ փետրվարի 27-ին, մենք՝ Արևիկը և Միրոն, սիրով հրավիրում ենք ձեզ, մեր սիրո  պատմության նոր սկիզբը նշելու։</div>
+    </div>
+</section>
+
+<section id="day">
+    <div class="container">
+        <h2>⛪ Օրվա ծրագիր</h2>
+        <div class="box">
+            ԵԿԵՂԵՑԻ՝ Կեչառիսի վանական համալիր<br>Ժամ՝ 14:00
+            <hr>
+            ՀԱՆԴԻՍՈՒԹՅՈՒՆՆԵՐԻ ՍՐԱՀ
+՝ Palais Wedding Hall<br>Ժամ՝ 17:30
+        </div>
+    </div>
+</section>
+
+<section id="register">
+    <div class="container">
+        <h2>📝 Հյուրերի գրանցում</h2>
+        <form id="guestForm">
+            <label>Անուն</label>
+            <input id="name" required>
+            <label>Քանակ</label>
+            <input type="number" id="count" min="1" required>
+            <label>Մաղթանք</label>
+            <textarea id="message"></textarea>
+            <button>Ուղարկել</button>
+        </form>
+        <h3>👥 Ընդհանուր հյուրերի քանակը՝ <span id="total">0</span></h3>
+    </div>
+</section>
+
+<section id="admin">
+    <div class="container">
+        <h2>🔐 Admin</h2>
+        <input type="password" id="adminPass" placeholder="Գաղտնաբառ">
+        <button onclick="login()">Մուտք</button>
+        <div id="guestList" class="hidden"></div>
+    </div>
+</section>
+
+<script>
+const ADMIN_PASSWORD = "admin123";
+let guests = JSON.parse(localStorage.getItem("guests")) || [];
+const total = document.getElementById("total");
+const guestList = document.getElementById("guestList");
+
+function render() {
+    total.textContent = guests.reduce((s,g)=>s+g.count,0);
+    localStorage.setItem("guests", JSON.stringify(guests));
+}
+
+guestForm.onsubmit = e => {
+    e.preventDefault();
+    guests.push({ name:name.value, count:+count.value, message:message.value });
+    e.target.reset();
+    render();
+};
+
+function login(){
+    if(adminPass.value === ADMIN_PASSWORD){
+        guestList.classList.remove("hidden");
+        renderAdmin();
+    } else alert("Սխալ գաղտնաբառ");
+}
+
+function renderAdmin(){
+    guestList.innerHTML = "<h3>📋 Հյուրերի ցանկ</h3>";
+    guests.forEach((g,i)=>{
+        guestList.innerHTML += `
+        <div class="guest-card">
+            <b>${g.name}</b> — ${g.count} հոգի<br>${g.message||""}
+            <div class="guest-actions">
+                <button onclick="editGuest(${i})">Խմբագրել</button>
+                <button onclick="deleteGuest(${i})">Ջնջել</button>
+            </div>
+        </div>`;
+    });
+}
+
+function deleteGuest(i){
+    if(confirm("Ջնջե՞լ այս հյուրին")){
+        guests.splice(i,1);
+        render();
+        renderAdmin();
+    }
+}
+
+function editGuest(i){
+    const g = guests[i];
+    const n = prompt("Անուն", g.name);
+    if(n===null) return;
+    const c = prompt("Քանակ", g.count);
+    const m = prompt("Մաղթանք", g.message);
+    guests[i] = { name:n, count:+c, message:m };
+    render();
+    renderAdmin();
+}
+
+const sections = document.querySelectorAll("section");
+window.addEventListener("scroll",()=>{
+    sections.forEach(s=>{
+        if(s.getBoundingClientRect().top < innerHeight-100)
+            s.classList.add("show");
+    });
+});
+render();
+</script>
+
+</body>
+</html>
